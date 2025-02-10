@@ -1,0 +1,18 @@
+{
+	"remotes":
+		{"REMOTENAME": 
+		{"type": "b2",
+		"account": "XXXXX",
+		"key": "XXXXX"},
+		"LocalFS":
+		{"type": "local"}}
+	,
+	"tasks":[
+		{"name": "NAME",
+		"task": "sync",
+		"src": "LocalFS:*PATH*",
+		"dest": "REMOTENAME:*PATH*",
+		"args": ""
+		}
+	]
+}
