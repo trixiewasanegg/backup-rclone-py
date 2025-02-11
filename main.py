@@ -77,7 +77,7 @@ taskCnt = len(conf["tasks"])
 n = 0
 for tasks in conf["tasks"]:
 	n = n+1
-	logging.debug(f"Starting task {n} of {taskCnt}: {tasks['name']}")
+	logging.info(f"Starting task {n} of {taskCnt}: {tasks['name']}")
 	
 	# Adds verbosity to arguments for debug logging
 	args = tasks["args"]
