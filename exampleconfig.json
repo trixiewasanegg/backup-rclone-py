@@ -12,7 +12,7 @@
 		"task": "sync",
 		"src": "LocalFS:*PATH*",
 		"dest": "REMOTENAME:*PATH*",
-		"args": ""
+		"args": [""]
 		}
 	]
 }

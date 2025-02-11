@@ -2,8 +2,22 @@ import json
 import logging
 import subprocess
 import re
+import sys
 
-logging.basicConfig(level=logging.DEBUG)
+if len(sys.argv) == 2:
+	flag = sys.argv[1]
+	match flag:
+		case "-d":
+			logging.basicConfig(level=logging.DEBUG)
+		case "-i":
+			logging.basicConfig(level=logging.INFO)
+		case "-w":
+			logging.basicConfig(level=logging.WARNING)
+	logging.debug(f"Set log level to {logging.root.level} from flag")
+else:
+	logging.basicConfig(level=logging.INFO)
+	logging.debug(f"Set to default info logging level")
+
 logging.basicConfig(format="{levelname} - {asctime} : {message}", style="{", datefmt="%Y-%m-%d %H:%M")
 
 # Reads the JSON config file
@@ -39,15 +53,16 @@ for remote in conf["remotes"]:
 		remote_type = confDict["type"]
 		confDict.pop("type")
 
+		cmd = ["rclone", "config", "create", remote_name, remote_type]
 		# Pulls key/value pairs for other arguments
 		try:
-			keyval = " ".join(f"{k} {v}" for k, v in confDict.items())
-			cmd = f"rclone config create {remote_name} {remote_type} {keyval}"
+			for k, v in confDict.items():
+				cmd.append(k)
+				cmd.append(v)
 		except:
-			cmd = f"rclone config create {remote_name} {remote_type}"
+			cmd = cmd
 
 		# Formats into command then executes
-		cmd = [i for i in cmd.split(" ") if i != '']
 		logging.debug(subprocess.run(cmd, capture_output=True, text=True).stdout)
 		logging.debug("Remote created")
 	else:
@@ -67,11 +82,11 @@ for tasks in conf["tasks"]:
 	# Adds verbosity to arguments for debug logging
 	args = tasks["args"]
 	if not "-v" in args or "-vv" in args:
-		args = "-v " + args
-	
-	# Formats command as string then list for running
-	cmd = f'rclone {tasks["task"]} {tasks["src"]} {tasks["dest"]} {args}'.strip()
-	cmd = cmd.split(" ")
+		args.append("-v")
+
+	cmd = ["rclone", tasks["task"], tasks["src"], tasks["dest"]] + args
+	cmd[:] = (val for val in cmd if val != "")
+	print(cmd)
 
 	# runs process, pulling stdout into a pipe for realtime logging
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -81,11 +96,12 @@ for tasks in conf["tasks"]:
 		# Changes bytes into string
 		line = line.decode("utf-8").replace("\n","")
 
+		level = "info"
+
 		#Regex to check if it begins with the datetime, reformats accordingly
 		if re.search("[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}",line) != None:
-			line = line[19:].split(':')[1].strip()
-			if line != "There was nothing to transfer" and line != "":
-				line = f"Modified     : {line}"
+			level = "debug"
+			line = f"Modified     : {line}"
 		
 		# Checks if beginning starts with the ending log lines
 		elif (line[0:11] == "Transferred") or (line[0:6] == "Checks") or (line[0:12] == "Elapsed time") or (line[0:6] == "Deleted"):
@@ -94,7 +110,11 @@ for tasks in conf["tasks"]:
 
 		# If the line is not blank, log it as debug
 		if line != "":
-			logging.debug(line)
+			match level:
+				case "debug":
+					logging.debug(line)
+				case "info":
+					logging.info(line)
 
 	logging.info(f"Completed task {n}: {tasks['name']}")
 logging.info("Tasks complete")
