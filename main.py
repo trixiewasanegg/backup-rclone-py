@@ -86,7 +86,6 @@ for tasks in conf["tasks"]:
 
 	cmd = ["rclone", tasks["task"], tasks["src"], tasks["dest"]] + args
 	cmd[:] = (val for val in cmd if val != "")
-	print(cmd)
 
 	# runs process, pulling stdout into a pipe for realtime logging
 	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -99,9 +98,11 @@ for tasks in conf["tasks"]:
 		level = "info"
 
 		#Regex to check if it begins with the datetime, reformats accordingly
-		if re.search("[0-9]{4}\/[0-9]{2}\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}",line) != None:
+		if re.search("[0-9]{4}\\/[0-9]{2}\\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}",line) != None:
 			level = "debug"
-			line = f"Modified     : {line}"
+			line = line[19:].split(':')[1:].strip()
+			if line != "There was nothing to transfer" and line != "":
+				line = f"Modified     : {line}"
 		
 		# Checks if beginning starts with the ending log lines
 		elif (line[0:11] == "Transferred") or (line[0:6] == "Checks") or (line[0:12] == "Elapsed time") or (line[0:6] == "Deleted"):
