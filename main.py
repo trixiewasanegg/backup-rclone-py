@@ -100,7 +100,7 @@ for tasks in conf["tasks"]:
 		#Regex to check if it begins with the datetime, reformats accordingly
 		if re.search("[0-9]{4}\\/[0-9]{2}\\/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}",line) != None:
 			level = "debug"
-			line = line[19:].split(':')[1:].strip()
+			line = "".join(line[19:].split(':')[1:]).strip()
 			if line != "There was nothing to transfer" and line != "":
 				line = f"Modified     : {line}"
 		
