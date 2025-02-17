@@ -77,7 +77,8 @@ taskCnt = len(conf["tasks"])
 n = 0
 for tasks in conf["tasks"]:
 	n = n+1
-	logging.info(f"Starting task {n} of {taskCnt}: {tasks['name']}")
+	name = tasks['name']
+	logging.info(f"Starting task {n} of {taskCnt}: {name}")
 	
 	# Adds verbosity to arguments for debug logging
 	args = tasks["args"]
@@ -111,11 +112,12 @@ for tasks in conf["tasks"]:
 
 		# If the line is not blank, log it as debug
 		if line != "":
+			line = f"Task {n} ({name}): {line}"
 			match level:
 				case "debug":
 					logging.debug(line)
 				case "info":
 					logging.info(line)
 
-	logging.info(f"Completed task {n}: {tasks['name']}")
+	logging.info(f"Completed task {n}: {name}")
 logging.info("Tasks complete")
